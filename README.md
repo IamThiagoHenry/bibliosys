@@ -1,6 +1,6 @@
-# Bibliosys — Sistema de Gestão de Biblioteca Pública
+# Bibliosys — sistema de gestão de biblioteca
 
-Sistema web completo para gestão de bibliotecas públicas, desenvolvido com Spring Boot e MongoDB Atlas. Permite que bibliotecários gerenciem o acervo, empréstimos e reservas, enquanto leitores acompanham seus empréstimos, reservas e interagem com o suporte diretamente pela plataforma.
+Sistema web completo para gestão de biblioteca, desenvolvido com Spring Boot e MongoDB Atlas. Permite que bibliotecários gerenciem o acervo, empréstimos e reservas, enquanto leitores acompanham seus empréstimos, reservas e interagem com o suporte diretamente pela plataforma.
 
 ---
 
