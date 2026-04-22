@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Empréstimo - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Novo Empréstimo</h1>
+            <a th:href="@{/emprestimos}" class="btn btn-outline">← Voltar</a>
+        </div>
+
+        <div class="card" style="max-width: 580px;">
+            <form th:action="@{/emprestimos/salvar}" th:object="${emprestimo}" method="post">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Livro</label>
+                        <select th:field="*{livroId}" required>
+                            <option value="">Selecione um livro...</option>
+                            <option th:each="livro : ${livros}"
+                                    th:value="${livro.id}"
+                                    th:text="${livro.titulo} + ' (' + ${livro.quantidade} + ' disponíveis)'"
+                                    th:disabled="${!livro.disponivel}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Usuário</label>
+                        <input type="text" th:field="*{nomeUsuario}" placeholder="Nome completo" required />
+                    </div>
+                    <div class="form-group">
+                        <label>ID do Usuário</label>
+                        <input type="text" th:field="*{usuarioId}" placeholder="ID ou matrícula" required />
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Título do Livro</label>
+                        <input type="text" th:field="*{tituloLivro}" placeholder="Título do livro emprestado" required />
+                    </div>
+                </div>
+
+                <div style="background:#f8f8f8; border-radius:4px; padding:12px; margin-bottom:1rem; font-size:13px; color:#555;">
+                    &#128203; Prazo de devolução: <strong>14 dias</strong> a partir de hoje.
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" class="btn btn-dark">Confirmar Empréstimo</button>
+                    <a th:href="@{/emprestimos}" class="btn btn-outline">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

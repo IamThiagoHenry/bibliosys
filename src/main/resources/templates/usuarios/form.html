@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuário - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1 th:text="${usuario.id != null} ? 'Editar Usuário' : 'Novo Usuário'"></h1>
+            <a th:href="@{/usuarios}" class="btn btn-outline">&#8592; Voltar</a>
+        </div>
+
+        <div class="card" style="max-width: 620px;">
+            <form th:action="@{/usuarios/salvar}" th:object="${usuario}" method="post">
+                <input type="hidden" th:field="*{id}" />
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Nome completo</label>
+                        <input type="text" th:field="*{nome}" placeholder="Nome do usuário" required />
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail (usado para login)</label>
+                        <input type="email" th:field="*{email}" placeholder="email@exemplo.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Documento (CPF)</label>
+                        <input type="text" th:field="*{documento}" placeholder="000.000.000-00" />
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" th:field="*{telefone}" placeholder="(00) 90000-0000" />
+                    </div>
+                    <div class="form-group">
+                        <label>Perfil</label>
+                        <select th:field="*{role}" required>
+                            <option value="">Selecione...</option>
+                            <option value="LEITOR">Leitor</option>
+                            <option value="BIBLIOTECARIO">Bibliotecário</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Endereço</label>
+                        <input type="text" th:field="*{endereco}" placeholder="Rua, número, bairro" />
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label th:text="${usuario.id != null} ? 'Senha (deixe em branco para manter a atual)' : 'Senha'"></label>
+                        <input type="password" th:field="*{senha}"
+                               placeholder="Mínimo 6 caracteres"
+                               th:required="${usuario.id == null}" />
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-dark">Salvar</button>
+                    <a th:href="@{/usuarios}" class="btn btn-outline">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

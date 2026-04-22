@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Chamados - Bibliosys</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; min-height: 100vh; padding: 2rem; }
+
+        .page-wrap { max-width: 760px; margin: 0 auto; }
+
+        .topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .logo { font-size: 14px; font-weight: 700; color: #111; letter-spacing: 2px; }
+
+        .btn-back { background: none; border: none; cursor: pointer; font-size: 13px;
+                    color: #888; padding: 0; text-decoration: none; }
+        .btn-back:hover { color: #111; }
+
+        .alert { padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 1rem; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-danger  { background: #f8d7da; color: #721c24; }
+
+        .chamado-card { background: white; border-radius: 8px; padding: 1.4rem;
+                        margin-bottom: 1rem; border-left: 4px solid #ddd; }
+        .chamado-card.aberto    { border-left-color: #f39c12; }
+        .chamado-card.resolvido { border-left-color: #2ecc71; }
+
+        .chamado-header { display: flex; justify-content: space-between; align-items: flex-start;
+                          margin-bottom: .8rem; }
+        .chamado-tipo { font-size: 11px; font-weight: 700; color: #888;
+                        text-transform: uppercase; letter-spacing: .5px; }
+        .chamado-data { font-size: 11px; color: #aaa; }
+
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-aberto     { background: #fff3cd; color: #856404; }
+        .badge-resolvido  { background: #d4edda; color: #155724; }
+        .badge-respondido { background: #d4edda; color: #155724; }
+
+        .mensagem-box { background: #f8f8f8; border-radius: 6px; padding: .9rem;
+                        font-size: 13px; color: #333; line-height: 1.7; margin-bottom: .8rem; }
+        .resposta-box { background: #d4edda; border-radius: 6px; padding: .9rem;
+                        font-size: 13px; color: #155724; line-height: 1.7; margin-bottom: .8rem; }
+        .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                         letter-spacing: .5px; margin-bottom: .4rem; }
+        .section-label.verde { color: #155724; }
+        .section-label.cinza { color: #888; }
+        .aguardando-msg { font-size: 12px; color: #aaa; margin-top: .3rem; }
+
+        /* ── Avaliação ── */
+        .avaliacao-box { background: #f8f8f8; border-radius: 6px; padding: 1rem;
+                         border: 1px solid #e0e0e0; }
+        .avaliacao-titulo { font-size: 12px; font-weight: 700; color: #555;
+                            text-transform: uppercase; letter-spacing: .5px; margin-bottom: .8rem; }
+
+        /* Estrelas */
+        .stars { display: flex; gap: 4px; margin-bottom: .8rem; }
+        .star { font-size: 24px; cursor: pointer; color: #ddd; transition: color .15s; line-height: 1; }
+        .star.ativa { color: #f39c12; }
+
+        /* Reação */
+        .reacao-group { display: flex; gap: 8px; margin-bottom: .8rem; }
+        .reacao-btn { font-size: 22px; background: #fff; border: 2px solid #e0e0e0;
+                      border-radius: 8px; padding: 6px 12px; cursor: pointer; transition: border-color .15s; }
+        .reacao-btn:hover   { border-color: #999; }
+        .reacao-btn.selecionado { border-color: #111; background: #f5f5f5; }
+
+        .btn-avaliar { padding: 8px 20px; background: #111; color: white; border: none;
+                       border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-avaliar:hover { background: #333; }
+        .btn-avaliar:disabled { background: #aaa; cursor: not-allowed; }
+
+        /* Avaliação já feita */
+        .avaliacao-feita { display: flex; align-items: center; gap: 12px; }
+        .stars-display { color: #f39c12; font-size: 18px; letter-spacing: 1px; }
+        .reacao-display { font-size: 22px; }
+        .avaliacao-label { font-size: 12px; color: #888; }
+
+        .empty { text-align: center; color: #aaa; padding: 3rem; background: white;
+                 border-radius: 8px; font-size: 13px; }
+        .empty a { color: #111; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+
+        <!-- Cabeçalho -->
+        <div class="topo">
+            <span class="logo">BIBLIOSYS</span>
+            <a th:href="@{/leitor/dashboard}" class="btn-back">&#8592; Voltar</a>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}"   class="alert alert-danger"  th:text="${erro}"></div>
+
+        <!-- Título -->
+        <div style="margin-bottom:1.2rem;">
+            <h1 style="font-size:18px; font-weight:600; color:#111;">&#128172; Meus Chamados de Suporte</h1>
+            <p style="font-size:13px; color:#888; margin-top:.3rem;">
+                Acompanhe o status e as respostas dos seus chamados.
+            </p>
+        </div>
+
+        <!-- Lista vazia -->
+        <div th:if="${#lists.isEmpty(chamados)}" class="empty">
+            Você não possui chamados de suporte.<br/><br/>
+            <a th:href="@{/suporte/novo}">Abrir um chamado</a>
+        </div>
+
+        <!-- Chamados -->
+        <div th:each="c : ${chamados}"
+             th:class="${'chamado-card ' + (c.status == 'ABERTO' ? 'aberto' : 'resolvido')}">
+
+            <!-- Header: tipo + data + badge -->
+            <div class="chamado-header">
+                <div class="chamado-tipo"
+                     th:text="${c.tipo == 'DUVIDA' ? 'Dúvida' : (c.tipo == 'RECLAMACAO' ? 'Reclamação' : 'Sugestão')}">
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="chamado-data"
+                          th:text="${c.dataCriacao != null ? #temporals.format(c.dataCriacao, 'dd/MM/yyyy HH:mm') : '—'}">
+                    </span>
+                    <span th:if="${not #strings.isEmpty(c.resposta)}"
+                          class="badge badge-respondido">&#10003; Respondido</span>
+                    <span th:if="${#strings.isEmpty(c.resposta)}"
+                          th:text="${c.status}"
+                          th:class="${'badge badge-' + #strings.toLowerCase(c.status)}">
+                    </span>
+                </div>
+            </div>
+
+            <!-- Mensagem original -->
+            <div class="section-label cinza">Sua mensagem</div>
+            <div class="mensagem-box" th:text="${c.mensagem}"></div>
+
+            <!-- Resposta (se houver) -->
+            <div th:if="${not #strings.isEmpty(c.resposta)}">
+                <div class="section-label verde">&#9993; Resposta da Biblioteca</div>
+                <div class="resposta-box">
+                    <p th:text="${c.resposta}"></p>
+                    <p th:if="${c.dataResposta != null}"
+                       style="font-size:11px; color:#3d9970; margin-top:.5rem;"
+                       th:text="'Respondido em ' + ${#temporals.format(c.dataResposta, 'dd/MM/yyyy HH:mm')}">
+                    </p>
+                </div>
+
+                <!-- Avaliação já feita -->
+                <div th:if="${c.avaliacaoEstrelas != null}" class="avaliacao-box">
+                    <div class="avaliacao-titulo">&#10003; Sua avaliação</div>
+                    <div class="avaliacao-feita">
+                        <div>
+                            <div class="avaliacao-label">Nota</div>
+                            <div class="stars-display"
+                                 th:text="${#strings.repeat('★', c.avaliacaoEstrelas) + #strings.repeat('☆', 5 - c.avaliacaoEstrelas)}">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="avaliacao-label">Reação</div>
+                            <div class="reacao-display"
+                                 th:text="${c.avaliacaoReacao == 'CURTIU' ? '👍' : (c.avaliacaoReacao == 'NEUTRO' ? '😐' : '👎')}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulário de avaliação (só se ainda não avaliou) -->
+                <div th:if="${c.avaliacaoEstrelas == null}" class="avaliacao-box">
+                    <div class="avaliacao-titulo">Como você avalia esta resposta?</div>
+
+                    <form th:action="@{/suporte/avaliar/{id}(id=${c.id})}" method="post"
+                          th:id="'form-aval-' + ${c.id}"
+                          onsubmit="return validarAvaliacao(this)">
+
+                        <!-- Estrelas -->
+                        <div style="margin-bottom:.6rem;">
+                            <div style="font-size:12px; color:#555; margin-bottom:.4rem;">Nota (1 a 5 estrelas)</div>
+                            <input type="hidden" name="estrelas" th:id="'estrelas-' + ${c.id}" value="0"/>
+                            <div class="stars" th:id="'stars-' + ${c.id}">
+                                <span class="star" th:attr="data-id=${c.id}, data-star=1" onclick="setStar(this)">&#9733;</span>
+                                <span class="star" th:attr="data-id=${c.id}, data-star=2" onclick="setStar(this)">&#9733;</span>
+                                <span class="star" th:attr="data-id=${c.id}, data-star=3" onclick="setStar(this)">&#9733;</span>
+                                <span class="star" th:attr="data-id=${c.id}, data-star=4" onclick="setStar(this)">&#9733;</span>
+                                <span class="star" th:attr="data-id=${c.id}, data-star=5" onclick="setStar(this)">&#9733;</span>
+                            </div>
+                        </div>
+
+                        <!-- Reação -->
+                        <div style="margin-bottom:.8rem;">
+                            <div style="font-size:12px; color:#555; margin-bottom:.4rem;">Reação</div>
+                            <input type="hidden" name="reacao" th:id="'reacao-' + ${c.id}" value=""/>
+                            <div class="reacao-group">
+                                <button type="button" class="reacao-btn"
+                                        th:attr="data-id=${c.id}, data-valor='CURTIU'"
+                                        onclick="setReacao(this)">&#128077;</button>
+                                <button type="button" class="reacao-btn"
+                                        th:attr="data-id=${c.id}, data-valor='NEUTRO'"
+                                        onclick="setReacao(this)">&#128528;</button>
+                                <button type="button" class="reacao-btn"
+                                        th:attr="data-id=${c.id}, data-valor='NAO_CURTIU'"
+                                        onclick="setReacao(this)">&#128078;</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-avaliar">Enviar Avaliação</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Aguardando resposta -->
+            <div th:if="${#strings.isEmpty(c.resposta)}" class="aguardando-msg">
+                &#8987; Aguardando resposta da biblioteca...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setStar(el) {
+            var id = el.dataset.id;
+            var n  = parseInt(el.dataset.star);
+            document.getElementById('estrelas-' + id).value = n;
+            var stars = document.getElementById('stars-' + id).querySelectorAll('.star');
+            stars.forEach(function(s, i) { s.classList.toggle('ativa', i < n); });
+        }
+
+        function setReacao(btn) {
+            var id    = btn.dataset.id;
+            var valor = btn.dataset.valor;
+            document.getElementById('reacao-' + id).value = valor;
+            btn.closest('.reacao-group').querySelectorAll('.reacao-btn').forEach(function(b) {
+                b.classList.remove('selecionado');
+            });
+            btn.classList.add('selecionado');
+        }
+
+        function validarAvaliacao(form) {
+            var chamadoId = form.id.replace('form-aval-', '');
+            var estrelas  = document.getElementById('estrelas-' + chamadoId).value;
+            var reacao    = document.getElementById('reacao-'   + chamadoId).value;
+            if (parseInt(estrelas) < 1) {
+                alert('Por favor, selecione uma nota de 1 a 5 estrelas.');
+                return false;
+            }
+            if (!reacao) {
+                alert('Por favor, selecione uma reação (👍 😐 👎).');
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>

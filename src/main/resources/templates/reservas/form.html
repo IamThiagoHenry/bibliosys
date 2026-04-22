@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nova Reserva - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Nova Reserva</h1>
+            <a th:href="@{/reservas}" class="btn btn-outline">&#8592; Voltar</a>
+        </div>
+
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+        <div class="card" style="max-width: 540px;">
+            <form th:action="@{/reservas/salvar}" th:object="${reserva}" method="post">
+
+                <div class="form-group">
+                    <label>Usuário</label>
+                    <select th:field="*{usuarioId}" required>
+                        <option value="">Selecione o usuário...</option>
+                        <option th:each="u : ${usuarios}"
+                                th:value="${u.id}"
+                                th:text="${u.nome} + ' (' + ${u.email} + ')'">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Livro</label>
+                    <select th:field="*{livroId}" required>
+                        <option value="">Selecione o livro...</option>
+                        <option th:each="livro : ${livros}"
+                                th:value="${livro.id}"
+                                th:text="${livro.titulo} + ' — ' + ${livro.autor} + (${livro.disponivel} ? ' (disponível)' : ' (indisponível)')">
+                        </option>
+                    </select>
+                </div>
+
+                <div style="background:#fff3cd; border-radius:4px; padding:12px; margin-bottom:1rem; font-size:13px; color:#856404;">
+                    &#128366; A reserva ficará com status <strong>AGUARDANDO</strong> até o livro ser devolvido.
+                    Quando disponível, o status será atualizado automaticamente.
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" class="btn btn-dark">Confirmar Reserva</button>
+                    <a th:href="@{/reservas}" class="btn btn-outline">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

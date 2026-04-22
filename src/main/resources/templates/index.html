@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Dashboard</h1>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="stat-card">
+                <div class="stat-icon">&#128100;</div>
+                <div>
+                    <div class="stat-value" th:text="${totalUsuarios}">0</div>
+                    <div class="stat-label">Total de Usuários</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128218;</div>
+                <div>
+                    <div class="stat-value" th:text="${totalLivros}">0</div>
+                    <div class="stat-label">Total de Livros</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128203;</div>
+                <div>
+                    <div class="stat-value" th:text="${totalAtivos}">0</div>
+                    <div class="stat-label">Empréstimos Ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="card">
+                <p style="font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: #111;">Acesso Rápido</p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <a th:href="@{/livros/novo}"       class="btn btn-dark"    style="text-align:center;">+ Cadastrar Livro</a>
+                    <a th:href="@{/emprestimos/novo}"  class="btn btn-outline" style="text-align:center;">+ Novo Empréstimo</a>
+                    <a th:href="@{/reservas/nova}"     class="btn btn-outline" style="text-align:center;">&#128366; Nova Reserva</a>
+                    <a th:href="@{/usuarios}"          class="btn btn-outline" style="text-align:center;">&#128101; Gerenciar Usuários</a>
+                </div>
+            </div>
+            <div class="card">
+                <p style="font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: #111;">Sobre o Sistema</p>
+                <p style="font-size: 13px; color: #888; line-height: 1.7;">
+                    Bibliosys é o sistema de gestão da Biblioteca Pública Municipal.
+                    Gerencie livros, empréstimos, reservas e usuários em um só lugar.
+                </p>
+                <div style="margin-top: 1rem;">
+                    <a th:href="@{/relatorios}" class="btn btn-outline btn-sm">&#128202; Ver Relatórios</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

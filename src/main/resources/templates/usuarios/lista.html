@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuários - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Usuários</h1>
+            <a th:href="@{/usuarios/novo}" class="btn btn-dark">+ Novo Usuário</a>
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Documento</th>
+                        <th>Telefone</th>
+                        <th>Perfil</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${usuarios}">
+                        <td th:text="${u.nome}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td th:text="${u.documento}"></td>
+                        <td th:text="${u.telefone}"></td>
+                        <td>
+                            <span th:text="${u.role}"
+                                  th:class="'badge ' + (${u.role == 'BIBLIOTECARIO'} ? 'badge-bibliotecario' : 'badge-leitor')">
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:6px;">
+                                <a th:if="${u.id != null and !#strings.isEmpty(u.id)}"
+                                   th:href="@{/usuarios/editar/{id}(id=${u.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                <form th:if="${u.id != null and !#strings.isEmpty(u.id)}"
+                                      th:action="@{/usuarios/deletar/{id}(id=${u.id})}" method="post"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Confirmar exclusão?')">
+                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                </form>
+                                <span th:unless="${u.id != null and !#strings.isEmpty(u.id)}"
+                                      class="badge badge-atrasado" style="font-size:10px;">ID inválido</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(usuarios)}">
+                        <td colspan="6" style="text-align:center; color:#aaa; padding:2rem;">Nenhum usuário cadastrado.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

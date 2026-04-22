@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Painel - Bibliosys</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        .section-title {
+            font-size: 13px; font-weight: 600; color: #888;
+            text-transform: uppercase; letter-spacing: .5px;
+            margin-bottom: .9rem;
+        }
+        .emp-item {
+            padding: .9rem 1rem; background: #f9f9f9;
+            border-radius: 6px; margin-bottom: .5rem;
+            border-left: 3px solid #e0e0e0;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .emp-item.ativo    { border-left-color: #2ecc71; }
+        .emp-item.atrasado { border-left-color: #e74c3c; background: #fff8f8; }
+        .emp-item.devolvido{ border-left-color: #95a5a6; }
+
+        .reserva-item {
+            padding: .8rem 1rem; background: #f9f9f9;
+            border-radius: 6px; margin-bottom: .5rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .reserva-item.disponivel {
+            background: #f0fff4; border: 1px solid #b2dfdb;
+        }
+        .quick-btn {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 20px; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 13px; font-weight: 600;
+            text-decoration: none; transition: background .15s;
+        }
+        .quick-btn-icon { font-size: 22px; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout-leitor :: sidebar-leitor}"></div>
+    <div class="main-content">
+
+        <!-- ── BANNER DE BOAS-VINDAS ─────────────────────────────────────────── -->
+        <div style="background:linear-gradient(135deg,#111 0%,#2d2d2d 100%); color:white;
+                    border-radius:8px; padding:1.5rem 2rem; margin-bottom:1.5rem;
+                    display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h2 style="font-size:20px; font-weight:700; margin-bottom:.4rem;">
+                    Olá, <span th:text="${nomeUsuario}">Leitor</span>!
+                    Bem-vindo à Biblioteca Municipal.
+                </h2>
+                <p style="font-size:13px; color:#aaa; font-style:italic;">
+                    "Um livro é uma viagem que você pode fazer quantas vezes quiser."
+                </p>
+            </div>
+            <div style="font-size:48px; opacity:.3;">&#128218;</div>
+        </div>
+
+        <!-- ── CARDS DE RESUMO ─────────────────────────────────────────────────── -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem;">
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128203;</div>
+                <div>
+                    <div class="stat-value" th:text="${meusEmprestimosAtivos}">0</div>
+                    <div class="stat-label">Empréstimos Ativos</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128366;</div>
+                <div>
+                    <div class="stat-value" th:text="${minhasReservasAguardando}">0</div>
+                    <div class="stat-label">Reservas Aguardando</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128218;</div>
+                <div>
+                    <div class="stat-value" th:text="${livrosDisponiveis}">0</div>
+                    <div class="stat-label">Livros Disponíveis</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128172;</div>
+                <div>
+                    <div class="stat-value" th:text="${chamadosAbertos}">0</div>
+                    <div class="stat-label">Chamados Abertos</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── GRÁFICO + RESERVAS ─────────────────────────────────────────────── -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+
+            <!-- Doughnut: Meus Empréstimos -->
+            <div class="card">
+                <p class="section-title">&#128200; Meus Empréstimos</p>
+                <div th:if="${totalAtivos == 0 and totalDevolvidos == 0 and totalAtrasados == 0}"
+                     style="text-align:center; color:#aaa; padding:2.5rem; font-size:13px;">
+                    Você ainda não possui empréstimos.<br/>
+                    <a th:href="@{/catalogo}" style="color:#111; font-weight:600;">Ver catálogo</a>
+                </div>
+                <div th:unless="${totalAtivos == 0 and totalDevolvidos == 0 and totalAtrasados == 0}"
+                     style="position:relative; height:230px;">
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Minhas Reservas Ativas -->
+            <div class="card">
+                <p class="section-title">&#128366; Minhas Reservas Aguardando</p>
+                <div th:if="${#lists.isEmpty(minhasReservas)}"
+                     style="color:#aaa; font-size:13px; padding:.5rem 0;">
+                    Nenhuma reserva ativa no momento.
+                    <a th:href="@{/catalogo}" style="color:#111; font-weight:600; display:block; margin-top:.5rem;">
+                        Reservar um livro
+                    </a>
+                </div>
+                <div th:each="r : ${minhasReservas}"
+                     th:class="${'reserva-item ' + (r.disponivelParaRetirada ? 'disponivel' : '')}">
+                    <div>
+                        <div style="font-size:13px; font-weight:600; color:#111;"
+                             th:text="${r.tituloLivro}"></div>
+                        <div style="font-size:12px; color:#888; margin-top:2px;"
+                             th:text="'Reservado em ' + ${r.dataReserva}"></div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span th:if="${r.disponivelParaRetirada}"
+                              style="color:#155724; font-weight:600; font-size:12px;">
+                            &#10003; Pronto para retirar!
+                        </span>
+                        <span th:unless="${r.disponivelParaRetirada}"
+                              style="color:#aaa; font-size:12px;">Aguardando</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── EMPRÉSTIMOS RECENTES ────────────────────────────────────────────── -->
+        <div class="card" style="margin-bottom:1.5rem;">
+            <p class="section-title">&#128337; Empréstimos Recentes</p>
+            <div th:if="${#lists.isEmpty(ultimosEmprestimos)}"
+                 style="color:#aaa; font-size:13px; padding:.5rem 0;">
+                Nenhum empréstimo encontrado.
+            </div>
+            <div th:each="emp : ${ultimosEmprestimos}"
+                 th:class="${'emp-item ' + #strings.toLowerCase(emp.status)}">
+                <div>
+                    <div style="font-size:14px; font-weight:600; color:#111;"
+                         th:text="${emp.tituloLivro}"></div>
+                    <div style="font-size:12px; color:#888; margin-top:3px;">
+                        Devolver até:
+                        <span th:text="${emp.dataDevolucao}"
+                              th:style="${emp.status == 'ATRASADO' ? 'color:#e74c3c; font-weight:600;' : ''}">
+                        </span>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span th:text="${emp.status}"
+                          th:class="${'badge ' + (emp.status == 'ATIVO' ? 'badge-ativo' : (emp.status == 'DEVOLVIDO' ? 'badge-devolvido' : 'badge-atrasado'))}">
+                    </span>
+                    <span th:if="${emp.status == 'ATRASADO' and emp.multa != null and emp.multa > 0}"
+                          style="color:#721c24; font-weight:700; font-size:13px;"
+                          th:text="'R$ ' + ${#numbers.formatDecimal(emp.multa, 1, 2)}">
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ACESSO RÁPIDO ──────────────────────────────────────────────────── -->
+        <div class="card">
+            <p class="section-title">&#9889; Acesso Rápido</p>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem;">
+
+                <a th:href="@{/catalogo}" class="quick-btn btn-dark">
+                    <span class="quick-btn-icon">&#128218;</span>
+                    <span>Buscar Livros no Catálogo</span>
+                </a>
+
+                <a th:href="@{/meus-emprestimos}" class="quick-btn btn-outline">
+                    <span class="quick-btn-icon">&#128203;</span>
+                    <span>Meus Empréstimos</span>
+                </a>
+
+                <a th:href="@{/suporte/acompanhar}" class="quick-btn btn-outline">
+                    <span class="quick-btn-icon">&#128172;</span>
+                    <span>Acompanhar Chamados</span>
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── CHART.JS DATA + INIT ────────────────────────────────────────────── -->
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var totalAtivos    = [[${totalAtivos}]];
+        var totalDevolvidos= [[${totalDevolvidos}]];
+        var totalAtrasados = [[${totalAtrasados}]];
+
+        var doughnutEl = document.getElementById('doughnutChart');
+        if (doughnutEl) {
+            new Chart(doughnutEl.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ativos', 'Devolvidos', 'Atrasados'],
+                    datasets: [{
+                        data: [totalAtivos, totalDevolvidos, totalAtrasados],
+                        backgroundColor: ['#2ecc71', '#95a5a6', '#e74c3c'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 12 }, padding: 14 }
+                        }
+                    }
+                }
+            });
+        }
+
+    });
+    /*]]>*/
+    </script>
+</body>
+</html>

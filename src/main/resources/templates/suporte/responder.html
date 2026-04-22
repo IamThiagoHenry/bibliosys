@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Responder Chamado - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Responder Chamado</h1>
+            <a th:href="@{/suporte}" class="btn btn-outline">&#8592; Voltar</a>
+        </div>
+
+        <!-- Dados do chamado original -->
+        <div class="card" style="max-width:700px; margin-bottom:1rem;">
+            <p style="font-size:13px; font-weight:600; color:#888; text-transform:uppercase;
+                      letter-spacing:.5px; margin-bottom:1rem;">Chamado Original</p>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem; font-size:13px; margin-bottom:1rem;">
+                <div>
+                    <span style="color:#888;">Solicitante:</span>
+                    <strong th:text="${chamado.nome}"></strong>
+                </div>
+                <div>
+                    <span style="color:#888;">E-mail:</span>
+                    <strong th:text="${chamado.email}"></strong>
+                </div>
+                <div>
+                    <span style="color:#888;">Tipo:</span>
+                    <span th:text="${chamado.tipo == 'DUVIDA' ? 'Dúvida' :
+                                    (chamado.tipo == 'RECLAMACAO' ? 'Reclamação' : 'Sugestão')}"></span>
+                </div>
+                <div>
+                    <span style="color:#888;">Aberto em:</span>
+                    <span th:text="${chamado.dataCriacao != null ? #temporals.format(chamado.dataCriacao, 'dd/MM/yyyy HH:mm') : '—'}"></span>
+                </div>
+            </div>
+
+            <div style="background:#f8f8f8; border-radius:6px; padding:1rem; font-size:13px; color:#333; line-height:1.6;">
+                <p style="color:#888; font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+                           margin-bottom:.4rem;">Mensagem</p>
+                <p th:text="${chamado.mensagem}"></p>
+            </div>
+        </div>
+
+        <!-- Formulário de resposta -->
+        <div class="card" style="max-width:700px;">
+            <p style="font-size:13px; font-weight:600; color:#888; text-transform:uppercase;
+                      letter-spacing:.5px; margin-bottom:1rem;">Sua Resposta</p>
+
+            <form th:action="@{/suporte/responder/{id}(id=${chamado.id})}" method="post">
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <textarea name="resposta" rows="6" required
+                              placeholder="Digite a resposta para este chamado..."
+                              style="width:100%; padding:10px 12px; border:1px solid #ddd;
+                                     border-radius:4px; font-size:13px; resize:vertical;
+                                     font-family:Arial, sans-serif;"></textarea>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" class="btn btn-dark">&#9993; Enviar Resposta</button>
+                    <a th:href="@{/suporte}" class="btn btn-outline">Cancelar</a>
+                </div>
+                <p style="font-size:11px; color:#aaa; margin-top:.6rem;">
+                    Ao enviar, o chamado será marcado automaticamente como <strong>Resolvido</strong>.
+                </p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

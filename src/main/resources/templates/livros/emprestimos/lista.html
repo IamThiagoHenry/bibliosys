@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Empréstimos - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Empréstimos</h1>
+            <a th:href="@{/emprestimos/novo}" class="btn btn-dark">+ Novo Empréstimo</a>
+        </div>
+
+        <div class="card">
+            <div class="table-header">
+                <div class="table-tabs">
+                    <button class="tab-btn active">Empréstimos Ativos</button>
+                    <button class="tab-btn">Devolvidos</button>
+                </div>
+                <input class="search-input" type="text" placeholder="Buscar por ID..." />
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Usuário</th>
+                        <th>Usuário</th>
+                        <th>Livro</th>
+                        <th>Data Empréstimo</th>
+                        <th>Data Devolução</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="emp : ${emprestimos}">
+                        <td th:text="${emp.usuarioId}"></td>
+                        <td th:text="${emp.nomeUsuario}"></td>
+                        <td th:text="${emp.tituloLivro}"></td>
+                        <td th:text="${emp.dataEmprestimo}"></td>
+                        <td th:text="${emp.dataDevolucao}"></td>
+                        <td>
+                            <span th:text="${emp.status}"
+                                  th:class="${emp.status == 'ATIVO'} ? 'badge badge-ativo' : (${emp.status == 'DEVOLVIDO'} ? 'badge badge-devolvido' : 'badge badge-atrasado')">
+                            </span>
+                        </td>
+                        <td>
+                            <a th:if="${emp.status == 'ATIVO'}"
+                               th:href="@{/emprestimos/devolver/{id}(id=${emp.id})}"
+                               class="btn btn-dark btn-sm"
+                               onclick="return confirm('Confirmar devolução?')">Devolver</a>
+                            <span th:unless="${emp.status == 'ATIVO'}" style="color:#aaa; font-size:13px;">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(emprestimos)}">
+                        <td colspan="7" style="text-align:center; color:#aaa; padding:2rem;">Nenhum empréstimo encontrado.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

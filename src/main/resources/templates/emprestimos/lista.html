@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Empréstimos - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Empréstimos</h1>
+            <a th:href="@{/emprestimos/novo}" class="btn btn-dark">+ Novo Empréstimo</a>
+        </div>
+
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Livro</th>
+                        <th>Data Empréstimo</th>
+                        <th>Prazo Devolução</th>
+                        <th>Data Retorno Real</th>
+                        <th>Status</th>
+                        <th>Multa</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="emp : ${emprestimos}">
+                        <td th:text="${emp.nomeUsuario}"></td>
+                        <td th:text="${emp.tituloLivro}"></td>
+                        <td th:text="${emp.dataEmprestimo}"></td>
+                        <td>
+                            <span th:text="${emp.dataDevolucao}"></span>
+                            <!-- Alerta: vence em até 3 dias -->
+                            <span th:if="${emp.vencendoEmBreve}"
+                                  class="badge badge-aguardando"
+                                  style="margin-left:4px; font-size:10px;">
+                                &#9888; Vencendo em breve
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${emp.dataRetornoReal != null}" th:text="${emp.dataRetornoReal}"></span>
+                            <span th:unless="${emp.dataRetornoReal != null}" style="color:#aaa;">—</span>
+                        </td>
+                        <td>
+                            <span th:text="${emp.status}"
+                                  th:class="${'badge ' + (emp.status == 'ATIVO' ? 'badge-ativo' : (emp.status == 'DEVOLVIDO' ? 'badge-devolvido' : 'badge-atrasado'))}">
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${emp.status == 'ATRASADO' and emp.multa != null}"
+                                  style="color:#721c24; font-weight:600;"
+                                  th:text="'R$ ' + ${#numbers.formatDecimal(emp.multa, 1, 2)}">
+                            </span>
+                            <span th:unless="${emp.status == 'ATRASADO' and emp.multa != null}" style="color:#aaa;">—</span>
+                        </td>
+                        <td>
+                            <form th:if="${emp.status == 'ATIVO' or emp.status == 'ATRASADO'}"
+                                  th:action="@{/emprestimos/devolver/{id}(id=${emp.id})}"
+                                  method="post" style="display:inline;"
+                                  onsubmit="return confirm('Confirmar devolução?')">
+                                <button type="submit" class="btn btn-success btn-sm">Devolver</button>
+                            </form>
+                            <span th:unless="${emp.status == 'ATIVO' or emp.status == 'ATRASADO'}"
+                                  style="color:#aaa; font-size:13px;">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(emprestimos)}">
+                        <td colspan="8" style="text-align:center; color:#aaa; padding:2rem;">Nenhum empréstimo encontrado.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

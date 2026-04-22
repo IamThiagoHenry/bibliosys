@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Minhas Reservas - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout-leitor :: sidebar-leitor}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Minhas Reservas</h1>
+            <a th:href="@{/catalogo}" class="btn btn-dark">+ Nova Reserva</a>
+        </div>
+
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}"   class="alert alert-danger"  th:text="${erro}"></div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Livro</th>
+                        <th>Data da Reserva</th>
+                        <th>Status</th>
+                        <th>Disponível para Retirada?</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${reservas}">
+                        <td><strong th:text="${r.tituloLivro}"></strong></td>
+                        <td th:text="${r.dataReserva}"></td>
+                        <td>
+                            <span th:text="${r.status}"
+                                  th:class="${'badge ' + (r.status == 'AGUARDANDO' ? 'badge-aguardando' : (r.status == 'CONCLUIDA' ? 'badge-concluida' : 'badge-cancelada'))}">
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${r.disponivelParaRetirada}"
+                                  style="color:#155724; font-weight:600;">
+                                &#10003; Sim — retire na biblioteca!
+                            </span>
+                            <span th:unless="${r.disponivelParaRetirada}" style="color:#aaa;">
+                                Aguardando devolução
+                            </span>
+                        </td>
+                        <td>
+                            <!-- Cancelar: apenas reservas AGUARDANDO -->
+                            <form th:if="${r.status == 'AGUARDANDO'}"
+                                  th:action="@{/minhas-reservas/cancelar/{id}(id=${r.id})}"
+                                  method="post" style="display:inline;"
+                                  onsubmit="return confirm('Deseja cancelar esta reserva?')">
+                                <button type="submit" class="btn btn-warning btn-sm"
+                                        style="color:white;">Cancelar Reserva</button>
+                            </form>
+                            <span th:unless="${r.status == 'AGUARDANDO'}" style="color:#aaa; font-size:12px;">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(reservas)}">
+                        <td colspan="5" style="text-align:center; color:#aaa; padding:2rem;">
+                            Você não possui reservas.
+                            <a th:href="@{/catalogo}" style="color:#111;">Reserve um livro no catálogo</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

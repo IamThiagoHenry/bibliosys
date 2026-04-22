@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Bibliosys</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; display: flex; min-height: 100vh; }
+
+        .left-panel {
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem;
+        }
+        .left-panel h1 { font-size: 26px; font-weight: 600; margin-bottom: 2rem; color: #111; }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #333;
+        }
+        .form-group input::placeholder { color: #aaa; }
+        .form-group input:focus { outline: none; border-color: #111; }
+
+        .forgot {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 1.5rem;
+            display: block;
+            text-decoration: none;
+        }
+        .forgot:hover { color: #111; }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #111;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 1.5px;
+        }
+        .btn-login:hover { background: #333; }
+
+        .error-msg {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 1rem;
+        }
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 1rem;
+        }
+
+        .right-panel {
+            width: 45%;
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            border-radius: 16px 0 0 16px;
+        }
+        .right-panel .library-text {
+            color: white;
+            font-size: 16px;
+            letter-spacing: 3px;
+            font-weight: 600;
+        }
+        .right-panel .criar-conta { color: #aaa; font-size: 13px; }
+        .btn-signup {
+            padding: 11px 32px;
+            background: transparent;
+            color: white;
+            border: 1.5px solid white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-signup:hover { background: #222; }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <h1>Bem vindo</h1>
+
+        <div th:if="${param.error}" class="error-msg">
+            Usuário ou senha incorretos.
+        </div>
+        <div th:if="${param.cadastro}" class="success-msg">
+            &#10003; Conta criada com sucesso! Faça login para continuar.
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <input type="email" name="username" placeholder="E-mail" required />
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Senha" required />
+            </div>
+            <a th:href="@{/esqueci-senha}" class="forgot">Esqueceu a senha?</a>
+            <button type="submit" class="btn-login">ENTRAR</button>
+        </form>
+    </div>
+
+    <div class="right-panel">
+        <p class="library-text">BIBLIOSYS</p>
+        <p class="criar-conta">Ainda não tem conta?</p>
+        <a th:href="@{/cadastro}" class="btn-signup">SIGN UP</a>
+    </div>
+</body>
+</html>

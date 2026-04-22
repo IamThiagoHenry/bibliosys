@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Suporte - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Central de Suporte</h1>
+        </div>
+
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Tipo</th>
+                        <th>Mensagem</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Avaliação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${chamados}">
+                        <td th:text="${c.nome}"></td>
+                        <td th:text="${c.email}"></td>
+                        <td>
+                            <span th:text="${c.tipo == 'DUVIDA' ? 'Dúvida' : (c.tipo == 'RECLAMACAO' ? 'Reclamação' : 'Sugestão')}"></span>
+                        </td>
+                        <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                            th:text="${c.mensagem}" th:title="${c.mensagem}"></td>
+                        <td th:text="${c.dataCriacao != null ? #temporals.format(c.dataCriacao, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+                        <td>
+                            <span th:if="${not #strings.isEmpty(c.resposta)}" class="badge badge-resolvido">Respondido</span>
+                            <span th:if="${#strings.isEmpty(c.resposta)}"
+                                  th:text="${c.status}"
+                                  th:class="${'badge ' + (c.status == 'ABERTO' ? 'badge-aberto' : 'badge-resolvido')}">
+                            </span>
+                        </td>
+                        <!-- Avaliação -->
+                        <td style="white-space:nowrap;">
+                            <span th:if="${c.avaliacaoEstrelas != null}"
+                                  style="color:#f39c12;"
+                                  th:text="${#strings.repeat('★', c.avaliacaoEstrelas) + #strings.repeat('☆', 5 - c.avaliacaoEstrelas)}">
+                            </span>
+                            <span th:if="${c.avaliacaoReacao == 'CURTIU'}"    style="margin-left:4px;">&#128077;</span>
+                            <span th:if="${c.avaliacaoReacao == 'NEUTRO'}"    style="margin-left:4px;">&#128528;</span>
+                            <span th:if="${c.avaliacaoReacao == 'NAO_CURTIU'}" style="margin-left:4px;">&#128078;</span>
+                            <span th:if="${c.avaliacaoEstrelas == null}" style="color:#aaa;">—</span>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+
+                                <!-- Tem resposta → Ver Resposta -->
+                                <a th:if="${not #strings.isEmpty(c.resposta)}"
+                                   th:href="@{/suporte/ver/{id}(id=${c.id})}"
+                                   class="btn btn-outline btn-sm">Ver Resposta</a>
+
+                                <!-- Aberto, sem resposta → Responder -->
+                                <a th:if="${c.status == 'ABERTO' and #strings.isEmpty(c.resposta)}"
+                                   th:href="@{/suporte/responder/{id}(id=${c.id})}"
+                                   class="btn btn-success btn-sm">Responder</a>
+
+                                <!-- Aberto, sem resposta → Resolver sem resposta -->
+                                <form th:if="${c.status == 'ABERTO' and #strings.isEmpty(c.resposta)}"
+                                      th:action="@{/suporte/resolver/{id}(id=${c.id})}"
+                                      method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-outline btn-sm">Resolver</button>
+                                </form>
+
+                                <!-- Excluir — sempre visível -->
+                                <form th:action="@{/suporte/deletar/{id}(id=${c.id})}"
+                                      method="post" style="display:inline;"
+                                      onsubmit="return confirm('Excluir chamado?')">
+                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(chamados)}">
+                        <td colspan="8" style="text-align:center; color:#aaa; padding:2rem;">
+                            Nenhum chamado encontrado.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

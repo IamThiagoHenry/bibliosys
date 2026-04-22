@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservas - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Reservas</h1>
+            <a th:href="@{/reservas/nova}" class="btn btn-dark">+ Nova Reserva</a>
+        </div>
+
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Livro</th>
+                        <th>Data Reserva</th>
+                        <th>Status</th>
+                        <th>Disponível p/ Retirada</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${reservas}">
+                        <td th:text="${r.nomeUsuario}"></td>
+                        <td th:text="${r.tituloLivro}"></td>
+                        <td th:text="${r.dataReserva}"></td>
+                        <td>
+                            <span th:text="${r.status}"
+                                  th:class="${'badge ' + (r.status == 'AGUARDANDO' ? 'badge-aguardando' : (r.status == 'CONCLUIDA' ? 'badge-concluida' : 'badge-cancelada'))}">
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${r.disponivelParaRetirada}" class="badge badge-disponivel">&#10003; Disponível</span>
+                            <span th:unless="${r.disponivelParaRetirada}" style="color:#aaa; font-size:13px;">—</span>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                                <form th:if="${r.status == 'AGUARDANDO'}"
+                                      th:action="@{/reservas/concluir/{id}(id=${r.id})}"
+                                      method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-success btn-sm">Concluir</button>
+                                </form>
+                                <form th:if="${r.status == 'AGUARDANDO'}"
+                                      th:action="@{/reservas/cancelar/{id}(id=${r.id})}"
+                                      method="post" style="display:inline;"
+                                      onsubmit="return confirm('Cancelar reserva?')">
+                                    <button type="submit" class="btn btn-warning btn-sm">Cancelar</button>
+                                </form>
+                                <form th:action="@{/reservas/deletar/{id}(id=${r.id})}"
+                                      method="post" style="display:inline;"
+                                      onsubmit="return confirm('Excluir reserva?')">
+                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(reservas)}">
+                        <td colspan="6" style="text-align:center; color:#aaa; padding:2rem;">Nenhuma reserva encontrada.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

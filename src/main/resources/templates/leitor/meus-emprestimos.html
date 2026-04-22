@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Empréstimos - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout-leitor :: sidebar-leitor}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Meus Empréstimos</h1>
+            <a th:href="@{/catalogo}" class="btn btn-dark">+ Buscar Livros</a>
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Livro</th>
+                        <th>Data do Empréstimo</th>
+                        <th>Prazo de Devolução</th>
+                        <th>Devolvido em</th>
+                        <th>Status</th>
+                        <th>Multa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="emp : ${emprestimos}">
+                        <td>
+                            <strong th:text="${emp.tituloLivro}"></strong>
+                        </td>
+                        <td th:text="${emp.dataEmprestimo}"></td>
+                        <td>
+                            <span th:text="${emp.dataDevolucao}"></span>
+                            <span th:if="${emp.vencendoEmBreve}"
+                                  class="badge badge-aguardando"
+                                  style="margin-left:4px; font-size:10px;">
+                                &#9888; Vence em breve
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${emp.dataRetornoReal}" th:text="${emp.dataRetornoReal}"></span>
+                            <span th:unless="${emp.dataRetornoReal}" style="color:#aaa;">—</span>
+                        </td>
+                        <td>
+                            <span th:text="${emp.status}"
+                                  th:class="${'badge ' + (emp.status == 'ATIVO' ? 'badge-ativo' : (emp.status == 'DEVOLVIDO' ? 'badge-devolvido' : 'badge-atrasado'))}">
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${emp.status == 'ATRASADO' and emp.multa != null}"
+                                  style="color:#721c24; font-weight:600;"
+                                  th:text="'R$ ' + ${#numbers.formatDecimal(emp.multa, 1, 2)}">
+                            </span>
+                            <span th:unless="${emp.status == 'ATRASADO' and emp.multa != null}"
+                                  style="color:#aaa;">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(emprestimos)}">
+                        <td colspan="6" style="text-align:center; color:#aaa; padding:2rem;">
+                            Você ainda não possui empréstimos.
+                            <a th:href="@{/catalogo}" style="color:#111;">Ver catálogo de livros</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

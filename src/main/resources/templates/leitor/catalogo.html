@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo - Bibliosys</title>
+</head>
+<body>
+    <div th:replace="~{layout-leitor :: sidebar-leitor}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Catálogo de Livros</h1>
+        </div>
+
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}"   class="alert alert-danger"  th:text="${erro}"></div>
+
+        <!-- Busca -->
+        <div class="card" style="padding:1rem 1.5rem; margin-bottom:1rem;">
+            <form th:action="@{/catalogo}" method="get" style="display:flex; gap:8px; align-items:center;">
+                <input class="search-input" type="text" name="busca"
+                       th:value="${busca}" placeholder="Buscar por título..." style="flex:1;" />
+                <button type="submit" class="btn btn-dark btn-sm">Buscar</button>
+                <a th:href="@{/catalogo}" class="btn btn-outline btn-sm">Limpar</a>
+            </form>
+        </div>
+
+        <!-- Grid de livros -->
+        <div class="livro-grid">
+            <div th:each="livro : ${livros}" class="livro-card">
+                <h3 th:text="${livro.titulo}"></h3>
+                <div class="autor" th:text="${livro.autor}"></div>
+                <div class="info" th:if="${livro.editora}" th:text="${livro.editora} + (${livro.anoPublicacao != null} ? ' · ' + ${livro.anoPublicacao} : '')"></div>
+                <div class="info" th:if="${livro.categoria}" th:text="'Categoria: ' + ${livro.categoria}"></div>
+                <div class="info" th:if="${livro.localizacao}" th:text="'Localização: ' + ${livro.localizacao}"></div>
+
+                <div style="margin-top:8px;">
+                    <span th:if="${livro.disponivel}"  class="badge badge-ativo">Disponível</span>
+                    <span th:unless="${livro.disponivel}" class="badge badge-atrasado">Indisponível</span>
+                    <span style="font-size:11px; color:#888; margin-left:6px;"
+                          th:text="${livro.quantidade} + ' exemplar(es)'"></span>
+                </div>
+
+                <div class="acoes">
+                    <!-- Livro disponível: solicitar empréstimo -->
+                    <form th:if="${livro.disponivel}"
+                          th:action="@{/catalogo/solicitar}" method="post">
+                        <input type="hidden" name="livroId" th:value="${livro.id}" />
+                        <button type="submit" class="btn btn-dark btn-sm"
+                                style="width:100%;"
+                                onclick="return confirm('Confirmar empréstimo deste livro?')">
+                            &#128203; Solicitar Empréstimo
+                        </button>
+                    </form>
+
+                    <!-- Livro indisponível: reservar -->
+                    <form th:unless="${livro.disponivel}"
+                          th:action="@{/catalogo/reservar}" method="post">
+                        <input type="hidden" name="livroId" th:value="${livro.id}" />
+                        <button type="submit" class="btn btn-warning btn-sm"
+                                style="width:100%; color:white;"
+                                onclick="return confirm('Reservar este livro? Você será notificado quando disponível.')">
+                            &#128366; Reservar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(livros)}"
+             style="text-align:center; color:#aaa; padding:3rem; background:white; border-radius:8px;">
+            Nenhum livro encontrado.
+        </div>
+    </div>
+</body>
+</html>

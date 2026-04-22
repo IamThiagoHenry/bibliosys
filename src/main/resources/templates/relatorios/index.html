@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatórios - Bibliosys</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        .section-title {
+            font-size: 13px; font-weight: 600; color: #888;
+            text-transform: uppercase; letter-spacing: .5px;
+            margin-bottom: 1rem;
+        }
+        .emp-card {
+            background: white; border-radius: 8px; padding: 1rem 1.2rem;
+            margin-bottom: .6rem; display: flex;
+            justify-content: space-between; align-items: center;
+            border-left: 3px solid #e0e0e0;
+        }
+        .emp-card.ativo    { border-left-color: #2ecc71; }
+        .emp-card.atrasado { border-left-color: #e74c3c; }
+        .emp-card.devolvido{ border-left-color: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="main-content">
+
+        <div class="topbar">
+            <h1>Relatórios</h1>
+        </div>
+
+        <!-- ── CARDS DE RESUMO ─────────────────────────────────────────────── -->
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:1.5rem;">
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128218;</div>
+                <div>
+                    <div class="stat-value" th:text="${totalLivros}">0</div>
+                    <div class="stat-label">Total de Livros</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128100;</div>
+                <div>
+                    <div class="stat-value" th:text="${totalUsuarios}">0</div>
+                    <div class="stat-label">Total de Usuários</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128203;</div>
+                <div>
+                    <div class="stat-value" th:text="${totalAtivos}">0</div>
+                    <div class="stat-label">Empréstimos Ativos</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">&#9989;</div>
+                <div>
+                    <div class="stat-value" th:text="${totalDevolvidos}">0</div>
+                    <div class="stat-label">Devoluções Realizadas</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">&#128172;</div>
+                <div>
+                    <div class="stat-value" th:text="${chamadosAbertos}">0</div>
+                    <div class="stat-label">Chamados Abertos</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── GRÁFICOS ────────────────────────────────────────────────────── -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+
+            <!-- Pizza: Status dos Empréstimos -->
+            <div class="card">
+                <p class="section-title">&#128200; Status dos Empréstimos</p>
+                <div th:if="${chartAtivos == 0 and chartDevolvidos == 0 and chartAtrasados == 0}"
+                     style="text-align:center; color:#aaa; padding:3rem; font-size:13px;">
+                    Nenhum empréstimo registrado ainda.
+                </div>
+                <div th:unless="${chartAtivos == 0 and chartDevolvidos == 0 and chartAtrasados == 0}"
+                     style="position:relative; height:260px;">
+                    <canvas id="pizzaChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Barras: Top 5 Livros -->
+            <div class="card">
+                <p class="section-title">&#127942; Top 5 Livros Mais Emprestados</p>
+                <div th:if="${#lists.isEmpty(top5Livros)}"
+                     style="text-align:center; color:#aaa; padding:3rem; font-size:13px;">
+                    Ainda não há dados suficientes.
+                </div>
+                <div th:unless="${#lists.isEmpty(top5Livros)}"
+                     style="position:relative; height:260px;">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── TABELAS ─────────────────────────────────────────────────────── -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+
+            <!-- Últimos 5 Empréstimos -->
+            <div class="card">
+                <p class="section-title">&#128337; Últimos 5 Empréstimos</p>
+                <div th:if="${#lists.isEmpty(ultimos5Emprestimos)}"
+                     style="color:#aaa; font-size:13px; padding:.5rem 0;">
+                    Nenhum empréstimo registrado.
+                </div>
+                <div th:each="emp : ${ultimos5Emprestimos}"
+                     th:class="${'emp-card ' + #strings.toLowerCase(emp.status)}">
+                    <div>
+                        <div style="font-size:13px; font-weight:600; color:#111;"
+                             th:text="${emp.tituloLivro}"></div>
+                        <div style="font-size:12px; color:#888; margin-top:2px;"
+                             th:text="${emp.nomeUsuario} + ' · ' + ${emp.dataEmprestimo}"></div>
+                    </div>
+                    <span th:text="${emp.status}"
+                          th:class="${'badge ' + (emp.status == 'ATIVO' ? 'badge-ativo' : (emp.status == 'DEVOLVIDO' ? 'badge-devolvido' : 'badge-atrasado'))}">
+                    </span>
+                </div>
+            </div>
+
+            <!-- Top 5 Usuários Mais Ativos -->
+            <div class="card">
+                <p class="section-title">&#127941; Top 5 Usuários Mais Ativos</p>
+                <div th:if="${#lists.isEmpty(top5Usuarios)}"
+                     style="color:#aaa; font-size:13px; padding:.5rem 0;">
+                    Nenhum dado disponível.
+                </div>
+                <table th:unless="${#lists.isEmpty(top5Usuarios)}">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Empréstimos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u, stat : ${top5Usuarios}">
+                            <td style="font-weight:700; color:#111;" th:text="${stat.count}"></td>
+                            <td th:text="${u['nome']}"></td>
+                            <td style="color:#888;" th:text="${u['email']}"></td>
+                            <td>
+                                <strong th:text="${u['totalEmprestimos']}"></strong>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── CHART.JS DATA + INIT ────────────────────────────────────────────── -->
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var chartAtivos    = [[${chartAtivos}]];
+        var chartDevolvidos= [[${chartDevolvidos}]];
+        var chartAtrasados = [[${chartAtrasados}]];
+        var top5Livros     = [[${top5Livros}]];
+
+        // ── Gráfico de Pizza ────────────────────────────────────────────────
+        var pizzaEl = document.getElementById('pizzaChart');
+        if (pizzaEl) {
+            new Chart(pizzaEl.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Ativos', 'Devolvidos', 'Atrasados'],
+                    datasets: [{
+                        data: [chartAtivos, chartDevolvidos, chartAtrasados],
+                        backgroundColor: ['#2ecc71', '#95a5a6', '#e74c3c'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 12 }, padding: 16 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── Gráfico de Barras Horizontal ────────────────────────────────────
+        var barEl = document.getElementById('barChart');
+        if (barEl && top5Livros && top5Livros.length > 0) {
+            var labels = top5Livros.map(function(i) { return i.titulo; });
+            var data   = top5Livros.map(function(i) { return i.totalEmprestimos; });
+
+            new Chart(barEl.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Empréstimos',
+                        data: data,
+                        backgroundColor: '#111',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, font: { size: 11 } }
+                        },
+                        y: {
+                            ticks: {
+                                font: { size: 11 },
+                                callback: function(value, index) {
+                                    var label = labels[index] || '';
+                                    return label.length > 22 ? label.substring(0, 22) + '…' : label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+    });
+    /*]]>*/
+    </script>
+</body>
+</html>
